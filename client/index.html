@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+    <title>Hello, world!</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center">Your product</h1>
+        <div class="card">
+            <div class="card-body">
+                <h2 id="name"></h2>
+                <b3 id="price"></b3>
+                <div id="quantity"></div>
+            </div>
+        </div>
+        <div class="container">
+            <label for="addProductName">Name</label>
+            <input type="text" class="form-control" id="addProductName" placeholder="Name of your product">
+            <label for="addProductPrice">Price</label>
+            <input type="text" class="form-control" id="addProductPrice" placeholder="Price of your product">
+            <label for="addProductQuantity">Quantity</label>
+            <input type="text" class="form-control" id="addProductQuantity" placeholder="Quantity of your product">
+            <button id="AddBtn" type="button" class="btn btn-primary">Primary</button>
+            <h4 id="successMassage" style="display: none;color: rgb(22, 187, 22);">Product successfully added</h4>
+        </div>
+        <div class="container">
+            <ul id="productContainer">
+
+            </ul>
+        </div>
+    </div>
+</body>
+
+<script>
+    //post product
+    //take container elements form dom
+    const nameContainer = document.getElementById('name')
+    const priceContainer = document.getElementById('price')
+    const quantityContainer = document.getElementById('quantity')
+    //this function show product
+    const showData = (product) => {
+        console.log(product);
+        const { name, price, quantity = 0 } = product
+        nameContainer.innerHTML = name
+        priceContainer.innerHTML = price
+        quantityContainer.innerText = quantity
+
+        //add new product in all product list 
+        let productContainer = document.getElementById('productContainer')
+        listAdder(product, productContainer)
+
+        // show add notification 
+        document.getElementById('successMassage').style.display = 'block';
+        setTimeout(() => {
+            successMassage.style.display = 'none';
+        }, 3000);
+        // clear input value
+        document.getElementById("addProductName").value = ""
+        document.getElementById('addProductPrice').value = ""
+        document.getElementById('addProductQuantity').value = ""
+    }
+
+
+    //add new product
+    const AddBtn = document.getElementById('AddBtn')
+    //show recently add product in top
+    const addNewProduct = () => {
+        //take data form dom
+        const addProductName = document.getElementById("addProductName").value
+        const addProductPrice = document.getElementById('addProductPrice').value
+        const addProductQuantity = document.getElementById('addProductQuantity').value
+        //make a new product object by dom data
+        const newProduct = {
+            name: addProductName,
+            price: addProductPrice,
+            quantity: addProductQuantity
+        }
+
+        fetch("http://localhost:3000/addProduct", {
+            method: "POST",
+            body: JSON.stringify(newProduct),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => showData(data))
+    }
+
+    // event listener for add new product
+    AddBtn.addEventListener('click', addNewProduct)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //show all product in list
+    const showAllProducts = (products) => {
+        console.log(products);
+        const productContainer = document.getElementById('productContainer')
+        for (let i = 0; i < products.length; i++) {
+            const product = products[i];
+            listAdder(product, productContainer)
+        }
+    }
+    const listAdder = (product, productContainer) => {
+        let listProduct = document.createElement('li')
+        listProduct.innerHTML = `<h2>Product name: ${product.name}</h2>
+                                      price: $${product.price}<p>
+                                      In stock: ${product.quantity}</p>
+                                      <br/><br/>`
+        productContainer.appendChild(listProduct)
+    }
+
+    //get all product form database
+    fetch("http://localhost:3000/products")
+        .then(res => res.json())
+        .then(data => showAllProducts(data))
+
+</script>
+
+</html>
