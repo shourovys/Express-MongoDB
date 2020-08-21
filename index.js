@@ -44,11 +44,56 @@ app.post('/addProduct', (req, res) => {
     //connect with database
     client.connect(err => {
         console.log('in new ', err)
-        const collection = client.db("EStore").collection("Product");
+        const collection = client.db("ema-john-product").collection("Product");
         // perform actions on the collection object
-        collection.insertOne(newProduct, (error, result) => {
+        collection.insert(newProduct, (error, result) => {
             if (result) {
-                res.send(result.ops[0])
+                res.send(result.ops)
+                // console.log(result.ops);
+            }
+            else {
+                console.log(error);
+            }
+        })
+        client.close();
+    });
+
+})
+
+//give order review data,, use post request for get maltipull key product data
+app.post('/getProductByKey', (req, res) => {
+    client = new MongoClient(uri, { useNewUrlParser: true });
+    const productsKey = req.body
+    //connect with database
+    client.connect(err => {
+        console.log('getProductByKey err ', err)
+        const collection = client.db("ema-john-product").collection("Product");
+        // perform actions on the collection object
+        collection.find({ key: { $in: productsKey } }).toArray((error, documents) => {
+            if (error) {
+                console.log('get error', error);
+            }
+            else {
+                res.send(documents)
+            }
+        })
+        client.close();
+    });
+
+})
+//user order info take by this api
+app.post('/placeOrder', (req, res) => {
+    client = new MongoClient(uri, { useNewUrlParser: true });
+    const orderInfo = req.body
+    orderInfo.orderTime = new Date()
+    //connect with database
+    client.connect(err => {
+        console.log('in new ', err)
+        const collection = client.db("ema-john-product").collection("orderInfo");
+        // perform actions on the collection object
+        collection.insert(orderInfo, (error, result) => {
+            if (result) {
+                res.send(result.ops)
                 // console.log(result.ops);
             }
             else {
@@ -61,13 +106,15 @@ app.post('/addProduct', (req, res) => {
 })
 
 
+
+
 app.get('/products', (req, res) => {
     client = new MongoClient(uri, { useNewUrlParser: true });
     //connect with database
     client.connect(err => {
-        const collection = client.db("EStore").collection("Product");
+        const collection = client.db("ema-john-product").collection("Product");
         // perform actions on the collection object
-        collection.find().limit(5).toArray((error, documents) => {
+        collection.find().limit(12).toArray((error, documents) => {
             if (error) {
                 console.log('get error', error);
             }
@@ -79,8 +126,28 @@ app.get('/products', (req, res) => {
     });
 })
 //103.87.249.98
-const prot = process.env.PORT || 3000
-app.listen(prot, () => "your app listen on 3000")
+
+//find a singel product by its
+app.get('/products/:id', (req, res) => {
+    const productId = req.params.id
+    client = new MongoClient(uri, { useNewUrlParser: true });
+    //connect with database
+    client.connect(err => {
+        const collection = client.db("ema-john-product").collection("Product");
+        // perform actions on the collection object
+        collection.find({ 'key': productId }).toArray((error, documents) => {
+            if (error) {
+                console.log('get error', error);
+            }
+            else {
+                res.send(documents[0])
+            }
+        })
+        client.close();
+    });
+})
+const prot = process.env.PORT || 4200
+app.listen(3000, () => "your app listen on 3000")
 
 
 
